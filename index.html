@@ -1,0 +1,1015 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>When Should AI Chime In?</title>
+<meta name="description" content="PITCH (Proactive Intervention Timing in CHat) is a dataset of 1,091 human judgments of proactive agent timing, collected from participants in the same unscripted multi-party conversations they took part in.">
+<meta property="og:title" content="When Should AI Chime In? Benchmarking Timely Contribution of Proactive Agents in Multi-Party Chat">
+<meta property="og:image" content="assets/PITCH.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --soft: #f6f7f9;
+    --ink: #1f2328;
+    --ink-2: #4b5563;
+    --ink-3: #6b7280;
+    --rule: #e5e7eb;
+    --link: #2563eb;
+    --ai: #7c5cd6;
+    --ai-soft: #f1edfc;
+    --p1: #e07a5f;
+    --p2: #3d8bbd;
+    --p3: #7f9a2e;
+    --agree: #e6f4ec;
+    --early: #d9534f;
+    --ok: #3f8f6b;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Noto Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--link); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  img { max-width: 100%; height: auto; display: block; }
+  /* One page width for every section. */
+  .container { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+  .sc { font-variant: small-caps; letter-spacing: 0.03em; }
+  b, strong { font-weight: 600; }
+
+  /* Header */
+  header { text-align: center; padding: 56px 0 36px; }
+  h1 { font-size: clamp(28px, 5vw, 40px); line-height: 1.2; font-weight: 700; margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+  .subtitle { font-size: clamp(17px, 2.4vw, 20px); color: var(--ink-2); margin: 10px auto 0; max-width: 680px; line-height: 1.4; text-wrap: balance; }
+  .authors { list-style: none; padding: 0; margin: 28px auto 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 16px 8px; }
+  .author { width: 108px; }
+  .author a { display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--ink); font-size: 14px; line-height: 1.3; text-align: center; }
+  .author a:hover { text-decoration: none; color: var(--link); }
+  .author img { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; background: var(--soft); outline: 1px solid rgba(17, 24, 39, 0.08); outline-offset: -1px; transition: transform 150ms ease-out; }
+  .author a:hover img { transform: scale(1.04); }
+  .authors sup, .affil sup { font-size: 0.7em; color: var(--ink-3); }
+  @media (max-width: 480px) { .author { width: 30%; } }
+  .affil { margin: 14px 0 0; font-size: 14px; color: var(--ink-3); }
+  .affil span { white-space: nowrap; margin: 0 6px; }
+  .buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 24px 0 0; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px; padding: 7px 13px; border-radius: 999px;
+    font-size: 14px; font-weight: 500; color: var(--ink); background: var(--bg); border: 1px solid #d1d5db;
+    transition: background-color 150ms ease-out, border-color 150ms ease-out;
+  }
+  .btn:hover { text-decoration: none; background: var(--soft); border-color: #9ca3af; }
+  .btn.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .btn.primary:hover { background: #374151; }
+  .btn svg { width: 15px; height: 15px; flex: none; }
+
+  /* Table of contents: fixed in the left margin on wide screens */
+  html { scroll-behavior: smooth; }
+  section { scroll-margin-top: 16px; }
+  .toc { display: none; }
+  @media (min-width: 1330px) {
+    .toc { display: block; position: fixed; top: 120px; left: max(16px, calc((100vw - 1040px) / 2 - 156px)); width: 136px; z-index: 5; }
+  }
+  .toc-title { margin: 0 0 10px; font-size: 13px; font-weight: 700; line-height: 1.35; color: var(--ink); }
+  .toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--rule); }
+  .toc a { display: block; padding: 5px 0 5px 12px; margin-left: -1px; border-left: 2px solid transparent; font-size: 13px; line-height: 1.35; color: var(--ink-3); transition: color 150ms ease-out, border-color 150ms ease-out; }
+  .toc a:hover { color: var(--ink); text-decoration: none; }
+  .toc a.on { color: var(--ink); font-weight: 600; border-left-color: var(--ai); }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  /* Sections */
+  section { padding: 48px 0; border-top: 1px solid var(--rule); }
+  h2 { font-size: 26px; font-weight: 600; margin: 0 0 14px; line-height: 1.3; text-wrap: balance; }
+  h3 { font-size: 18px; font-weight: 600; margin: 32px 0 8px; line-height: 1.35; }
+  h2 + h3 { margin-top: 4px; }
+  p { margin: 0 0 14px; }
+  .lead { font-size: 18px; line-height: 1.6; }
+  .note { font-size: 14px; color: var(--ink-3); }
+  figure { margin: 24px 0 0; }
+  figcaption { font-size: 14px; color: var(--ink-2); margin-top: 12px; }
+  /* Small uppercase label used for the data-collection phases */
+  .phase { margin: 0 0 6px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ai); }
+
+  /* ---------- Scrollytelling: conversation (left, sticky) + steps (right) ---------- */
+  .story { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 40px; margin-top: 24px; }
+  .stage { position: sticky; top: 16px; align-self: start; }
+  .chat { background: var(--soft); border: 1px solid var(--rule); border-radius: 12px; display: flex; flex-direction: column; max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); }
+  .chat-head { display: grid; grid-template-columns: 44px minmax(0, 1fr); align-items: end; column-gap: 8px; padding: 12px 14px 8px; border-bottom: 1px solid var(--rule); font-size: 13px; color: var(--ink-3); }
+  .chat-head b { color: var(--ink); font-weight: 600; }
+  .lane-head { display: grid; grid-template-columns: repeat(3, 12px); gap: 2px; font-size: 10px; font-weight: 700; text-align: center; line-height: 1; opacity: 0; transition: opacity 300ms ease-out; }
+  .lane-head span:nth-child(1) { color: var(--p1); } .lane-head span:nth-child(2) { color: var(--p2); } .lane-head span:nth-child(3) { color: var(--p3); }
+  .story:not([data-step="1"]):not([data-step="2"]) .lane-head { opacity: 1; }
+  .topic { margin: 0; line-height: 1.4; }
+  .chat-body { position: relative; overflow-y: auto; padding: 6px 14px 14px; overscroll-behavior: contain; scrollbar-width: thin; }
+
+  .row { display: grid; grid-template-columns: 40px 22px 30px minmax(0, 1fr); column-gap: 6px; align-items: start; position: relative; transition: background-color 300ms ease-out; border-radius: 6px; }
+  .row:not(.in) { display: none; }
+  @media (prefers-reduced-motion: no-preference) { .row.in { animation: rowIn 450ms cubic-bezier(0.16, 1, 0.3, 1) both; } }
+  @keyframes rowIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .lanes { position: relative; align-self: stretch; display: grid; grid-template-columns: repeat(3, 12px); gap: 2px; }
+  .lane { position: relative; }
+  .lane .bar { position: absolute; left: 4px; width: 4px; top: 0; bottom: 0; opacity: 0; transition: opacity 300ms ease-out; }
+  .lane .bar.s { top: 10px; border-top-left-radius: 2px; border-top-right-radius: 2px; }
+  .lane .bar.e { bottom: 10px; border-bottom-left-radius: 2px; border-bottom-right-radius: 2px; }
+  .lane .dot { position: absolute; left: 0; top: 13px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--soft); opacity: 0; transform: scale(0.4); transition: opacity 300ms ease-out, transform 400ms cubic-bezier(0.16, 1, 0.3, 1); }
+  .lane .dot.ghost { background: transparent !important; border: 1.5px dashed currentColor; }
+  .lane.l1 { color: var(--p1); } .lane.l1 .bar, .lane.l1 .dot { background: var(--p1); }
+  .lane.l2 { color: var(--p2); } .lane.l2 .bar, .lane.l2 .dot { background: var(--p2); }
+  .lane.l3 { color: var(--p3); } .lane.l3 .bar, .lane.l3 .dot { background: var(--p3); }
+  .bar.on { opacity: 0.9; }
+  .dot.on { opacity: 1; transform: none; }
+
+  .tn { font-size: 11px; color: var(--ink-3); text-align: right; padding-top: 14px; font-variant-numeric: tabular-nums; transition: color 300ms ease-out; }
+  .av { width: 28px; height: 28px; border-radius: 50%; margin-top: 8px; display: grid; place-items: center; color: #fff; font-size: 11px; font-weight: 700; }
+  .av[data-p] { position: relative; margin-bottom: 14px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Ccircle cx='12' cy='8.5' r='4.2'/%3E%3Cpath d='M3.8 21.5c.6-4.3 4-6.8 8.2-6.8s7.6 2.5 8.2 6.8z'/%3E%3C/svg%3E"); background-size: 19px; background-position: center 5px; background-repeat: no-repeat; }
+  .av[data-p]::after { content: attr(data-p); position: absolute; top: 29px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 700; line-height: 1.2; }
+  .av.p1 { background-color: var(--p1); } .av.p2 { background-color: var(--p2); } .av.p3 { background-color: var(--p3); }
+  .av.p1::after { color: var(--p1); } .av.p2::after { color: var(--p2); } .av.p3::after { color: var(--p3); }
+  .msg { padding: 6px 0; }
+  .bubble { display: inline-block; background: #fff; border: 1px solid var(--rule); border-radius: 4px 14px 14px 14px; padding: 5px 11px; font-size: 14px; line-height: 1.45; max-width: 100%; transition: border-color 300ms ease-out, box-shadow 300ms ease-out; }
+  .gap .gap-label { grid-column: 3 / span 2; font-size: 13px; font-style: italic; color: var(--ink-3); padding: 7px 0 7px 2px; line-height: 1.4; }
+  .gap .range { font-style: normal; font-weight: 600; font-size: 12px; margin-right: 6px; font-variant-numeric: tabular-nums; }
+  .gap .tn { padding-top: 7px; }
+  .row.agree { background: var(--agree); }
+  .row.ideal .tn { color: var(--ok); font-weight: 700; }
+
+  .insert { display: none; position: relative; margin: 0; padding: 2px 0 6px 74px; }
+  .insert::before { content: ""; position: absolute; left: 18px; top: 0; bottom: 0; width: 4px; background: var(--p2); opacity: 0.9; }
+  .insert span { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; border: 1.5px dashed var(--p2); color: var(--p2); background: #fff; font-size: 12px; font-weight: 600; }
+  .story[data-step="3"] .insert { display: block; }
+  @media (prefers-reduced-motion: no-preference) { .story[data-step="3"] .insert { animation: rowIn 450ms cubic-bezier(0.16, 1, 0.3, 1) both; } }
+
+  .composer { display: none; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 10px 14px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--ink-2); line-height: 1.4; background: #fff; border-radius: 0 0 12px 12px; }
+  .composer .av { margin: 0; }
+  .story[data-step="1"] .composer { display: grid; }
+  .av.aiav { background: var(--ai); }
+  .typing { display: inline-flex; gap: 3px; padding: 6px 8px; background: var(--ai-soft); border-radius: 999px; }
+  .typing i { width: 5px; height: 5px; border-radius: 50%; background: var(--ai); opacity: 0.35; }
+  @media (prefers-reduced-motion: no-preference) {
+    .typing i { animation: blink 1.2s infinite ease-in-out; }
+    .typing i:nth-child(2) { animation-delay: 0.2s; } .typing i:nth-child(3) { animation-delay: 0.4s; }
+  }
+  @keyframes blink { 0%, 80%, 100% { opacity: 0.35; } 40% { opacity: 1; } }
+
+  .steps { padding: 0; margin: 0; list-style: none; }
+  h2.intro { margin: 0 0 12px; }
+  .card .intro-sub { font-size: 18px; color: var(--ink); margin: 0 0 18px; }
+  .card .hint { font-size: 13px; color: var(--ink-3); }
+  .step { min-height: 78vh; display: flex; align-items: center; }
+  .step:first-child { min-height: 60vh; align-items: flex-start; padding-top: 8px; }
+  .step:last-child { min-height: 70vh; }
+  .card { padding: 4px 0; opacity: 0.3; transition: opacity 300ms ease-out; }
+  .step.on .card { opacity: 1; }
+  .card h3 { margin: 0 0 8px; }
+  .card p { color: var(--ink-2); }
+  .card p:last-child { margin-bottom: 0; }
+  .who-tag { display: inline-block; padding: 0 7px; border-radius: 4px; color: #fff; font-size: 12px; font-weight: 700; line-height: 1.6; vertical-align: 1px; }
+  .who-tag.p1 { background: var(--p1); } .who-tag.p2 { background: var(--p2); } .who-tag.p3 { background: var(--p3); }
+  .ai-card { margin: 12px 0 14px; display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 8px; }
+  .ai-card .av { margin-top: 0; background: var(--ai); }
+  .ai-bubble { background: var(--ai-soft); border: 1px solid #d9cff7; border-radius: 4px 14px 14px 14px; padding: 9px 12px; font-size: 14px; line-height: 1.55; color: var(--ink); }
+  .ai-bubble a { color: #5b3fc4; text-decoration: underline; text-underline-offset: 2px; text-decoration-color: #b9a8ee; }
+  .judg { width: 100%; border-collapse: collapse; font-size: 14px; margin: 10px 0 12px; font-variant-numeric: tabular-nums; }
+  .judg th, .judg td { text-align: left; padding: 6px 8px 6px 0; border-bottom: 1px solid var(--rule); }
+  .judg th { font-weight: 600; color: var(--ink-3); font-size: 12px; }
+  .judg s { color: var(--ink-3); }
+
+  @media (max-width: 820px) {
+    .story { grid-template-columns: minmax(0, 1fr); gap: 0; }
+    .stage { top: 0; z-index: 1; background: var(--bg); padding: 8px 0; margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
+    .chat { max-height: 52vh; max-height: 52dvh; }
+    .steps { position: relative; z-index: 2; }
+    .step, .step:first-child, .step:last-child { min-height: 70vh; align-items: flex-end; padding: 0 0 6vh; }
+    .card { opacity: 1; background: #fff; border: 1px solid var(--rule); border-radius: 12px; padding: 14px 16px; box-shadow: 0 6px 24px rgba(17, 24, 39, 0.08); }
+  }
+
+  /* Mock of the study interface (Phase 2) */
+  .ui { background: #fff; border: 1px solid var(--rule); border-radius: 10px; padding: 10px; margin: 10px 0 14px; font-size: 12px; box-shadow: 0 1px 2px rgba(17, 24, 39, 0.04); }
+  .ui-tabs { display: flex; gap: 2px; padding: 3px; background: var(--soft); border-radius: 7px; margin-bottom: 8px; }
+  .ui-tabs span { flex: 1; text-align: center; padding: 3px 4px; border-radius: 5px; color: var(--ink-2); font-weight: 500; white-space: nowrap; }
+  .ui-tabs span.on { background: #5b3fd9; color: #fff; }
+  .ui-search { display: flex; gap: 6px; margin-bottom: 8px; }
+  .ui-input { flex: 1; min-width: 0; border: 1px solid #d1d5db; border-radius: 6px; padding: 4px 8px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ui-btn { background: #5b3fd9; color: #fff; border-radius: 6px; padding: 4px 10px; font-weight: 600; }
+  .ui-results { list-style: none; margin: 0; padding: 0; }
+  .ui-results li { display: flex; gap: 8px; align-items: flex-start; justify-content: space-between; padding: 6px 2px; border-top: 1px solid var(--rule); line-height: 1.4; color: var(--ink); }
+  .ui-results li > span:first-child { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .ui-added { flex: none; color: #3f9b5f; font-weight: 600; font-size: 12px; padding-top: 1px; }
+  .ui-foot { display: flex; justify-content: space-between; align-items: center; padding-top: 8px; border-top: 1px solid var(--rule); color: var(--ink-3); }
+  .ui-draft { border: 1px solid #d9cff7; color: #5b3fd9; background: var(--ai-soft); border-radius: 6px; padding: 3px 9px; font-weight: 600; }
+  .ui-place { border-color: #f2b8cf; box-shadow: 0 0 0 2px #fbe3ec; }
+  .card .ui-q { margin: 0 0 6px; font-size: 12px; color: var(--ink-2); }
+  .ui-pl { display: flex; align-items: center; gap: 8px; padding: 3px 0; color: var(--ink); }
+  .ui-pl i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .ui-pl b { font-weight: 700; }
+  .ui-chg { margin-left: auto; border: 1px solid #d1d5db; border-radius: 6px; padding: 1px 9px; font-size: 12px; color: var(--ink-2); }
+
+  /* Evaluation: task cards (left) + results per metric (right) */
+  :root { --hr-model: #6250d6; --hr-human: #eb6834; --hr-random: #878b92; }
+  .hr-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--ink-2); margin: 20px 0 6px; }
+  .hr-legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .hr-legend i { width: 12px; height: 12px; border-radius: 3px; }
+  .hr-legend i.dash { width: 0; height: 14px; border-radius: 0; border-left: 1.5px dashed var(--hr-random); }
+  .ev { margin: 0 -14px; }
+  .ev-head, .ev-row, .ev-axis { display: grid; grid-template-columns: 300px repeat(3, minmax(0, 1fr)); column-gap: 24px; padding: 0 14px; }
+  .ev-head { align-items: stretch; padding-bottom: 8px; }
+  .ev-head > div { display: flex; flex-direction: column; }
+  .ev-head .ev-hc { justify-content: flex-end; }
+  .ev-head b { display: block; font-size: 14px; font-weight: 600; line-height: 1.3; }
+  .ev-head span { display: block; font-size: 13px; color: var(--ink-3); line-height: 1.4; margin-top: 2px; }
+  .ev-head .ev-hc { font-size: 13px; color: var(--ink-3); }
+  .mviz { margin-top: auto; padding-top: 10px; max-width: 230px; }
+  .mviz svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .ev-row { padding-top: 12px; padding-bottom: 12px; border-top: 1px solid var(--rule); }
+  .ev-row.main { background: #f7f5fe; border-top-color: transparent; border-radius: 12px; }
+  .ev-row.main + .ev-row { border-top-color: transparent; }
+  .ev-axis { padding-top: 4px; }
+  .ev-axis .ax { position: relative; height: 16px; font-size: 12px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .ev-axis .ax span { position: absolute; top: 0; transform: translateX(-50%); }
+  .ev-axis .ax span:first-child { transform: none; } .ev-axis .ax span:last-child { transform: translateX(-100%); }
+
+  .task { border: 1px solid var(--rule); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; background: #fff; }
+  .ev-row.main .task { border-color: #c9bdf3; }
+  .task-name { margin: 0 0 2px; font-size: 16px; font-weight: 600; color: var(--ai); line-height: 1.35; }
+  .task-tag { display: inline-block; margin-left: 6px; padding: 0 7px; border-radius: 999px; font-size: 11px; font-weight: 600; vertical-align: 2px; background: var(--ai); color: #fff; }
+  .task-tag.light { background: var(--soft); color: var(--ink-3); border: 1px solid var(--rule); }
+  .task-desc { margin: 0 0 10px; font-size: 14px; color: var(--ink-2); line-height: 1.5; }
+  .viz { background: var(--soft); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; justify-content: center; gap: 6px; min-height: 146px; }
+  .d { display: flex; align-items: center; gap: 6px; }
+  .turn { display: inline-flex; align-items: center; justify-content: center; min-width: 62px; padding: 2px 10px; border-radius: 999px; background: #e5e7eb; font-size: 12px; font-weight: 600; color: var(--ink); margin-right: 2px; }
+  .d.pick .turn, .c.pick { background: #e4dcfa; box-shadow: inset 0 0 0 1.5px var(--ai); color: #4c2fb0; }
+  .no, .yes { width: 21px; height: 21px; display: grid; place-items: center; font-size: 12px; font-weight: 700; color: #fff; background: #c7cbd1; }
+  .no { border-radius: 5px; } .yes { border-radius: 50%; }
+  .no.on { background: #e5534b; } .yes.on { background: #3f9b5f; }
+  .ahead { display: inline-flex; gap: 3px; padding: 0 4px; }
+  .ahead i { width: 6px; height: 6px; border-radius: 50%; background: #b8bec7; }
+  .post { display: flex; align-items: center; gap: 6px; margin: 2px 0 0 24px; }
+  .post.center { justify-content: center; margin-left: 0; }
+  .ai { width: 21px; height: 21px; border-radius: 50%; background: var(--ai); color: #fff; font-size: 10px; font-weight: 700; display: grid; place-items: center; flex: none; }
+  .msg-chip { background: var(--ai); color: #fff; font-size: 12px; padding: 3px 10px; border-radius: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .seq { display: flex; align-items: center; justify-content: center; gap: 4px; flex-wrap: nowrap; }
+  .c { white-space: nowrap; min-width: 21px; height: 21px; padding: 0 6px; border-radius: 999px; border: 1.5px solid var(--ink-2); display: grid; place-items: center; font-size: 11px; font-weight: 600; background: #fff; transition: background-color 200ms ease-out, border-color 200ms ease-out; }
+  .c.pick { border: 0; padding: 0 10px; font-size: 12px; }
+  .c.cur { background: #efeafd; border-color: var(--ai); }
+  .more { color: var(--ink-3); letter-spacing: 1px; }
+  .viz.anim [data-k] { transition: opacity 300ms ease-out, transform 300ms cubic-bezier(0.16, 1, 0.3, 1); }
+  .viz.anim [data-k]:not(.show) { opacity: 0; transform: translateY(4px); }
+
+  .mc { min-width: 0; display: flex; }
+  .mc-name { display: none; }
+  .mc-t { position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 4px; cursor: default;
+    background-image: linear-gradient(var(--rule), var(--rule)), linear-gradient(#eceef1, #eceef1), linear-gradient(#eceef1, #eceef1);
+    background-size: 1px 100%, 1px 100%, 1px 100%; background-position: 0 0, 50% 0, 100% 0; background-repeat: no-repeat; }
+  .mc-t.rnd::after { content: ""; position: absolute; top: 0; bottom: 0; left: var(--rnd); border-left: 1.5px dashed var(--hr-random); pointer-events: none; }
+  .mc-line { position: relative; height: 20px; }
+  .mc-line.h { height: 12px; }
+  .mc-b { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 0 4px 4px 0; z-index: 1; }
+  .mc-line.m .mc-b { background: var(--hr-model); }
+  .mc-line.h .mc-b { background: var(--hr-human); }
+  .mc-v { position: absolute; top: 50%; transform: translateY(-50%); margin-left: 6px; font-size: 13px; font-weight: 600; color: var(--ink-2); font-variant-numeric: tabular-nums; white-space: nowrap; pointer-events: none; z-index: 2; }
+  .mc-v.in { margin-left: 0; margin-right: 6px; color: #fff; }
+  .ev-row.main .mc-line.m .mc-v { font-size: 16px; font-weight: 700; color: var(--ink); }
+  .ev-row.main .mc-line.m .mc-v.in { color: #fff; }
+  .ev-row:not(.main) .mc-line.m .mc-b { opacity: 0.55; }
+  .hr-tip { position: fixed; z-index: 20; pointer-events: none; background: #fff; border: 1px solid var(--rule); border-radius: 8px; padding: 7px 10px; font-size: 13px; line-height: 1.5; box-shadow: 0 4px 16px rgba(17, 24, 39, 0.12); max-width: 270px; }
+  .hr-tip b { font-weight: 600; }
+  .hr-tip .k { color: var(--ink-3); }
+  .hr-tip i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 5px; vertical-align: 0; }
+  .defn { border-bottom: 1.5px dotted var(--ink-3); cursor: help; }
+  .defn:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; border-radius: 2px; }
+  .model-pop { position: fixed; z-index: 30; width: 380px; max-width: calc(100vw - 32px); background: #fff; border: 1px solid var(--rule); border-radius: 10px; padding: 12px 14px; box-shadow: 0 8px 28px rgba(17, 24, 39, 0.14); font-size: 13px; line-height: 1.45; }
+  .model-pop p { margin: 0; }
+  .mp-title { font-weight: 600; margin-bottom: 8px !important; }
+  .mp-g { margin-bottom: 8px; }
+  .mp-g > p { font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 2px; }
+  .mp-g ul { list-style: none; margin: 0; padding: 0; }
+  .mp-g li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 1px 0; }
+  .mp-g code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 12px; color: var(--ink); }
+  .model-pop em { font-style: normal; display: inline-block; min-width: 18px; text-align: center; font-size: 11px; font-weight: 700; padding: 0 4px; margin-left: 3px; border-radius: 4px; background: var(--ai-soft); color: #4c2fb0; }
+  .mp-foot { border-top: 1px solid var(--rule); padding-top: 8px; color: var(--ink-3); font-size: 12px; }
+  .hr-table { margin-top: 14px; }
+  .hr-table summary { cursor: pointer; font-size: 14px; color: var(--link); width: fit-content; }
+  @media (max-width: 860px) {
+    .ev { margin: 0; }
+    .ev-axis, .ev-head .ev-hc { display: none; }
+    .ev-head { grid-template-columns: minmax(0, 1fr); row-gap: 16px; padding: 0 12px 16px; }
+    .ev-row { grid-template-columns: minmax(0, 1fr); row-gap: 6px; padding: 14px 12px; }
+    .ev-row .task { margin-bottom: 6px; }
+    .mc { display: grid; grid-template-columns: 128px minmax(0, 1fr); align-items: center; min-height: 30px; }
+    .ev-row.main .mc { min-height: 42px; }
+    .mc-name { display: block; font-size: 13px; color: var(--ink-2); padding-right: 8px; line-height: 1.3; }
+    .mc-t { align-self: stretch; }
+  }
+
+  /* Figure 1: where predictions land (stacked bars) */
+  .oc { margin-top: 20px; }
+  .oc-row { display: grid; grid-template-columns: 210px minmax(0, 1fr); align-items: center; column-gap: 12px; margin-bottom: 14px; }
+  .oc-l { font-size: 14px; color: var(--ink); text-align: right; line-height: 1.35; }
+  .oc-bar { display: flex; height: 30px; gap: 1px; background: #fff; }
+  .oc-s { position: relative; height: 100%; min-width: 0; display: grid; place-items: center; font-size: 13px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; cursor: default; transition: opacity 150ms ease-out; }
+  .oc-s:first-child { border-radius: 4px 0 0 4px; } .oc-s:last-child { border-radius: 0 4px 4px 0; }
+  .oc-s.dark { color: #fff; }
+  .oc-chart:hover .oc-s { opacity: 0.6; } .oc-chart .oc-s:hover { opacity: 1; }
+  .oc-axis { display: grid; grid-template-columns: 210px minmax(0, 1fr); column-gap: 12px; }
+  .oc-ticks { position: relative; height: 18px; border-top: 1px solid var(--ink-3); font-size: 12px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .oc-ticks span { position: absolute; top: 3px; transform: translateX(-50%); }
+  .oc-ticks span:first-child { transform: none; } .oc-ticks span:last-child { transform: translateX(-100%); }
+  .oc-xl { grid-column: 2; text-align: center; font-size: 13px; color: var(--ink-2); margin-top: 4px; }
+  .oc-legend { display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 13px; color: var(--ink-2); margin: 16px 0 4px 222px; }
+  .oc-legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .oc-legend i { width: 12px; height: 12px; border-radius: 3px; flex: none; }
+  @media (max-width: 640px) {
+    .oc-row, .oc-axis { grid-template-columns: minmax(0, 1fr); }
+    .oc-l { text-align: left; margin-bottom: 4px; }
+    .oc-axis > div:first-child { display: none; }
+    .oc-xl { grid-column: 1; }
+    .oc-legend { margin-left: 0; }
+  }
+  /* Findings */
+  .bad { color: var(--early); font-weight: 600; }
+  .good { color: var(--ok); font-weight: 600; }
+  .table-scroll { overflow-x: auto; margin-top: 16px; }
+  table.results { border-collapse: collapse; width: 100%; min-width: 520px; font-size: 14px; font-variant-numeric: tabular-nums; }
+  .results th, .results td { padding: 8px 10px; text-align: right; border-bottom: 1px solid var(--rule); }
+  .results th:first-child, .results td:first-child { text-align: left; padding-left: 0; }
+  .results thead th { font-weight: 600; color: var(--ink-2); border-bottom: 1.5px solid var(--ink-3); vertical-align: bottom; }
+  .results tr.sep td { border-top: 1.5px solid var(--ink-3); }
+  .muted { color: var(--ink-3); }
+  .resources { list-style: none; margin: 0; padding: 0; }
+  .resources li { padding: 10px 0; border-bottom: 1px solid var(--rule); display: flex; flex-wrap: wrap; gap: 4px 16px; align-items: baseline; }
+  .resources li:first-child { border-top: 1px solid var(--rule); }
+  .resources a { font-weight: 600; min-width: 200px; }
+  .resources span { color: var(--ink-2); }
+  .cite { position: relative; }
+  pre { margin: 0; padding: 16px; background: var(--soft); border: 1px solid var(--rule); border-radius: 8px; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 13px; line-height: 1.55; overflow-x: auto; }
+  .copy { position: absolute; top: 8px; right: 8px; font: inherit; font-size: 13px; padding: 4px 12px; border-radius: 999px; border: 1px solid #d1d5db; background: #fff; cursor: pointer; }
+  .copy:hover { background: var(--soft); }
+  footer { padding: 28px 0 48px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--ink-3); }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1>When Should AI Chime In?</h1>
+    <p class="subtitle">Benchmarking Timely Contribution of Proactive Agents in <span style="white-space:nowrap">Multi-Party</span> Chat</p>
+    <ul class="authors">
+      <li class="author"><a href="https://www.ruotongw.com/" target="_blank" rel="noopener"><img src="assets/authors/ruotong.jpg" width="72" height="72" alt="" loading="lazy"><span>Ruotong Wang<sup>1</sup></span></a></li>
+      <li class="author"><a href="https://www.linkedin.com/in/gobrianyu/" target="_blank" rel="noopener"><img src="assets/authors/brian.jpg" width="72" height="72" alt="" loading="lazy"><span>Brian S. Yu<sup>1</sup></span></a></li>
+      <li class="author"><a href="https://www.xinyizhou.xyz" target="_blank" rel="noopener"><img src="assets/authors/xinyi.jpg" width="72" height="72" alt="" loading="lazy"><span>Xinyi Zhou<sup>2</sup></span></a></li>
+      <li class="author"><a href="https://josephcc.com/" target="_blank" rel="noopener"><img src="assets/authors/joseph.jpg" width="72" height="72" alt="" loading="lazy"><span>Joseph Chee Chang<sup>3</sup></span></a></li>
+      <li class="author"><a href="https://paoponder.com" target="_blank" rel="noopener"><img src="assets/authors/pao.jpg" width="72" height="72" alt="" loading="lazy"><span>Pao Siangliulue<sup>3</sup></span></a></li>
+      <li class="author"><a href="https://www.jonathanbragg.com/" target="_blank" rel="noopener"><img src="assets/authors/jonathan.jpg" width="72" height="72" alt="" loading="lazy"><span>Jonathan Bragg<sup>3</sup></span></a></li>
+      <li class="author"><a href="https://liweijiang.github.io/" target="_blank" rel="noopener"><img src="assets/authors/liwei.jpg" width="72" height="72" alt="" loading="lazy"><span>Liwei Jiang<sup>1</sup></span></a></li>
+      <li class="author"><a href="https://homes.cs.washington.edu/~axz/" target="_blank" rel="noopener"><img src="assets/authors/amy.jpg" width="72" height="72" alt="" loading="lazy"><span>Amy X. Zhang<sup>1</sup></span></a></li>
+    </ul>
+    <p class="affil">
+      <span><sup>1</sup>University of Washington</span>
+      <span><sup>2</sup>Boise State University</span>
+      <span><sup>3</sup>Allen Institute for AI</span>
+    </p>
+    <div class="buttons">
+      <a class="btn primary" href="pitch.pdf">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>
+        Paper (PDF)</a>
+      <a class="btn" href="https://github.com/gobrianyu/pitch-benchmark/tree/master/annotation-system">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Benchmark Annotation System</a>
+      <a class="btn" href="https://github.com/gobrianyu/pitch-benchmark/tree/master/data">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>
+        Benchmark Data</a>
+      <a class="btn" href="https://github.com/gobrianyu/pitch-human-baseline">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><path d="M16 3.13a4 4 0 0 1 0 7.75M21 21v-2a4 4 0 0 0-3-3.85"/></svg>
+        Human Baseline System</a>
+      <a class="btn" href="https://github.com/gobrianyu/pitch-benchmark/tree/master/data">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>
+        Human Baseline Data</a>
+    </div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="On this page">
+  <p class="toc-title">When Should AI Chime In?</p>
+  <ol>
+    <li><a href="#tldr">Overview</a></li>
+    <li><a href="#scenario">Data collection</a></li>
+    <li><a href="#evaluation">Evaluation</a></li>
+    <li><a href="#findings">Findings</a></li>
+    <li><a href="#resources">Paper, data and code</a></li>
+    <li><a href="#citation">Citation</a></li>
+  </ol>
+</nav>
+
+<main>
+  <section id="tldr">
+    <div class="container">
+      <p class="lead">We introduce <strong><span class="sc">Pitch</span> (<u>P</u>roactive <u>I</u>ntervention <u>T</u>iming in <u>CH</u>at)</strong>, a dataset of <strong>1,091 human judgments of proactive agent timing</strong> collected from participants in 35 unscripted multi-party conversations they took part in. Using <span class="sc">Pitch</span> as a benchmark, we find that while models can place contributions well when given the entire conversation history, they <strong>systematically chime in too early when asked to decide live as the conversation unfolds</strong>.</p>
+    </div>
+  </section>
+
+  <section id="scenario">
+    <div class="container">
+      <div class="story" id="story" data-step="1">
+        <div class="stage">
+          <div class="chat" aria-label="Excerpt of a group conversation from PITCH">
+            <div class="chat-head">
+              <div class="lane-head" aria-hidden="true"><span>P1</span><span>P2</span><span>P3</span></div>
+              <p class="topic"><b>Is autonomous driving ready for city streets?</b><br>3 human participants &middot; 79 turns &middot; open research discussion</p>
+            </div>
+            <div class="chat-body" id="chat">
+              <div class="row gap" data-from="1" data-to="5"><div class="lanes"></div><span class="tn"></span><span class="gap-label"><span class="range">Turn 1 &ndash; Turn 5</span>&hellip; greetings and first takes: public transit, driving cultures abroad &hellip;</span></div>
+              <div class="row" data-from="6" data-to="6"><div class="lanes"></div><span class="tn">6</span><span class="av p3" data-p="P3" role="img" aria-label="Participant 3"></span><div class="msg"><span class="bubble">I personally think this technology is very useful. Motor vehicle deaths account for a large portion of deaths globally. Statistically, self-driving cars are much safer.</span></div></div>
+              <div class="row" data-from="7" data-to="7"><div class="lanes"></div><span class="tn">7</span><span class="av p1" data-p="P1" role="img" aria-label="Participant 1"></span><div class="msg"><span class="bubble">Yes, self-driving cars are much safer</span></div></div>
+              <div class="row gap" data-from="8" data-to="32"><div class="lanes"></div><span class="tn"></span><span class="gap-label"><span class="range">Turn 8 &ndash; Turn 32</span>&hellip; who the car should save, legal fault, job losses, sensors and edge cases &hellip;</span></div>
+              <div class="row" data-from="33" data-to="33"><div class="lanes"></div><span class="tn">33</span><span class="av p2" data-p="P2" role="img" aria-label="Participant 2"></span><div class="msg"><span class="bubble">Do you think a machine could be trained to handle these edge cases better than a human driver?</span></div></div>
+              <div class="row" data-from="34" data-to="34"><div class="lanes"></div><span class="tn">34</span><span class="av p2" data-p="P2" role="img" aria-label="Participant 2"></span><div class="msg"><span class="bubble">Also do we know how companies like waymo train their cars to make decisions in cases like that?</span></div></div>
+              <div class="row" data-from="35" data-to="35"><div class="lanes"></div><span class="tn">35</span><span class="av p2" data-p="P2" role="img" aria-label="Participant 2"></span><div class="msg"><span class="bubble">Like a priority list of what to save or something like that</span></div></div>
+              <div class="row" data-from="36" data-to="36"><div class="lanes"></div><span class="tn">36</span><span class="av p1" data-p="P1" role="img" aria-label="Participant 1"></span><div class="msg"><span class="bubble">I don't know, personally</span></div></div>
+              <div class="row" data-from="37" data-to="37"><div class="lanes"></div><span class="tn">37</span><span class="av p3" data-p="P3" role="img" aria-label="Participant 3"></span><div class="msg"><span class="bubble">I believe so, yes. Self-driving cars have some deterministic rules built in.</span></div></div>
+              <div class="insert" aria-hidden="true"><span>AI message &rarr; here (P2's ideal turn)</span></div>
+              <div class="row" data-from="38" data-to="38"><div class="lanes"></div><span class="tn">38</span><span class="av p1" data-p="P1" role="img" aria-label="Participant 1"></span><div class="msg"><span class="bubble">But I remember Stanford had a little web demo meant to gather moral training data from real people</span></div></div>
+              <div class="row" data-from="39" data-to="39"><div class="lanes"></div><span class="tn">39</span><span class="av p3" data-p="P3" role="img" aria-label="Participant 3"></span><div class="msg"><span class="bubble">They use VLMs I believe, like large Vision Language Models</span></div></div>
+              <div class="row gap" data-from="40" data-to="79"><div class="lanes"></div><span class="tn"></span><span class="gap-label"><span class="range">Turn 40 &ndash; Turn 79</span>&hellip; transparency, regulation, driving in India, training data, reaction speed, goodbyes &hellip;</span></div>
+            </div>
+            <div class="composer"><span class="av aiav" aria-hidden="true">AI</span><span>The AI agent has a contribution ready. <b>When should it chime in?</b></span><span class="typing" aria-hidden="true"><i></i><i></i><i></i></span></div>
+          </div>
+        </div>
+
+        <ol class="steps">
+          <li class="step on" data-step="1"><div class="card">
+            <h2 class="intro">An AI agent in a human group chat, making proactive contributions. When is a good time?</h2>
+            <p class="intro-sub">To answer this, we collected <span class="sc">Pitch</span>, a dataset with human labels.</p>
+            <p class="hint">Scroll to see how the labels were collected &darr;</p>
+          </div></li>
+          <li class="step" data-step="2"><div class="card">
+            <p class="phase">Phase 1 &middot; Conversation</p>
+            <h3>Collect conversations from human participants</h3>
+            <p>We invited <strong>89 human participants</strong> to hold <strong>35 unscripted group conversations</strong> in which information needs come up naturally.</p>
+          </div></li>
+          <li class="step" data-step="3"><div class="card">
+            <p class="phase">Phase 2 &middot; Message contribution</p>
+            <h3>Collect candidate messages for the AI agent</h3>
+            <p>After the conversation, participants search for sources that could have helped the group, then write a message an AI agent could post, with optional AI drafting.</p>
+            <div class="ui" aria-label="Message contribution interface">
+              <div class="ui-tabs"><span>AI Finder</span><span class="on">Scholar</span><span>Web</span><span>Manual</span></div>
+              <div class="ui-search"><span class="ui-input">Waymo hierarchical priority systems</span><span class="ui-btn">Search</span></div>
+              <ul class="ui-results">
+                <li><span>Autonomous Vehicle Decision-Making Algorithms and Data-driven Mobilities in Networked Transport Systems</span><span class="ui-added">&#x2713; Added</span></li>
+                <li><span>According to Whose Morals? The Decision-Making Algorithms of Self-Driving Cars and the Limits of the Law</span><span class="ui-added">&#x2713; Added</span></li>
+                <li><span>Context-Aware Ethical Decision-Making: A Novel Framework for Autonomous Systems</span><span class="ui-added">&#x2713; Added</span></li>
+              </ul>
+              <div class="ui-foot"><span>5 sources added</span><span class="ui-draft">&#x2726; Draft with AI</span></div>
+            </div>
+            <p>Here, <span class="who-tag p2">P2</span> wrote:</p>
+            <div class="ai-card">
+              <span class="av" aria-hidden="true">AI</span>
+              <div class="ai-bubble">Waymo's decision-making systems use <a href="https://www.semanticscholar.org/paper/58cd22c5b08d03a272a7273b0f176b5b31c16061">hierarchical priority systems</a> that typically prioritize minimizing total casualties first, then protecting vulnerable road users like pedestrians and cyclists. However, the exact algorithms remain largely proprietary. Studies indicate most autonomous systems use <a href="https://www.semanticscholar.org/paper/082a05bf88e8ad3fbeee547ff4dc5acfae68c30f">context-aware frameworks</a> that weigh factors like passenger safety, pedestrian protection, and legal compliance, but the specific weight given to each factor isn't publicly disclosed, highlighting concerns about the need for greater transparency in autonomous vehicle decision-making processes.</div>
+            </div>
+            <p>Then the author places it in the conversation:</p>
+            <div class="ui ui-place" aria-label="Placement controls">
+              <p class="ui-q">Choose the turns after which this message could appear</p>
+              <div class="ui-pl"><i style="background:#3f9b5f"></i><span>First relevant: <b>#24</b></span><span class="ui-chg">Change</span></div>
+              <div class="ui-pl"><i style="background:#e5534b"></i><span>Last useful: <b>#43</b></span><span class="ui-chg">Change</span></div>
+              <div class="ui-pl"><i style="background:#e8a33d"></i><span>Best placement: <b>#37</b></span><span class="ui-chg">Change</span></div>
+            </div>
+          </div></li>
+          <li class="step" data-step="4"><div class="card">
+            <p class="phase">Phase 3 &middot; Timing judgments</p>
+            <h3>Collect timing judgments from the rest of the group</h3>
+            <p>Each other group member independently marks an ideal turn and an acceptable window, or says the message shouldn't appear.</p>
+            <table class="judg">
+              <thead><tr><th>Participant</th><th>Ideal turn</th><th>Acceptable window</th></tr></thead>
+              <tbody>
+                <tr><td><span class="who-tag p2">P2</span> author</td><td>37</td><td>24–43</td></tr>
+                <tr><td><span class="who-tag p1">P1</span></td><td>34</td><td>34–76</td></tr>
+                <tr><td><span class="who-tag p3">P3</span></td><td>35</td><td>34–43</td></tr>
+              </tbody>
+            </table>
+          </div></li>
+          <li class="step" data-step="5"><div class="card">
+            <p class="phase">Phase 4 &middot; Deliberation</p>
+            <h3>Let participants review and revise</h3>
+            <p>Participants see each other's judgments and can revise their own. Here, <span class="who-tag p3">P3</span> moves their ideal turn from T35 to T39.</p>
+            <table class="judg">
+              <thead><tr><th>Participant</th><th>Ideal turn</th><th>Acceptable window</th></tr></thead>
+              <tbody>
+                <tr><td><span class="who-tag p2">P2</span> author</td><td>37</td><td>24–43</td></tr>
+                <tr><td><span class="who-tag p1">P1</span></td><td>34</td><td>34–76</td></tr>
+                <tr><td><span class="who-tag p3">P3</span></td><td><s>35</s> 39</td><td>34–43</td></tr>
+              </tbody>
+            </table>
+          </div></li>
+          <li class="step" data-step="6"><div class="card">
+            <p class="phase">The benchmark task</p>
+            <h3>Evaluate when models chime in</h3>
+            <p>The judgments define good timing for this message: T34, T37 and T39 are ideal turns, and T34–43 is acceptable to everyone (shaded). A model sees the same conversation and message and decides when, if ever, to post it.</p>
+          </div></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section id="evaluation">
+    <div class="container">
+      <h2>Evaluation: three task setups</h2>
+      <p>We evaluate <span class="defn" id="model-defn" tabindex="0" aria-describedby="model-pop">15 models in 28 configurations</span>. Each model gets a conversation and a candidate message, and the three setups differ in how much of the conversation it sees before it commits.</p>
+    </div>
+    <div class="container">
+      <div class="hr-legend" aria-hidden="true">
+        <span><i style="background:var(--hr-model)"></i>Models (pooled over 28 configurations)</span>
+        <span><i style="background:var(--hr-human)"></i>Lay human performance</span>
+        <span><i class="dash"></i>Random turn</span>
+      </div>
+      <div class="ev" id="ev" role="group" aria-label="Task setups and headline results. Turn-by-turn replay: models 19.0% matching anyone's ideal turn, 50.5% inside anyone's window, 24.2% inside everyone's window; lay human performance 23.7%, 53.7%, 33.2%. Five-turn lookahead: 22.4%, 52.2%, 27.8%. Full transcript: 57.8%, 92.7%, 73.3%. Random turn: 3.7%, 25.5%, 7.6%.">
+        <div class="ev-head" aria-hidden="true">
+          <div class="ev-hc">Task setup</div>
+          <div><b>Matches anyone's ideal turn</b><span>% of predicted turns that equal at least one participant's ideal turn</span><div class="mviz" data-mv="0" aria-hidden="true"></div></div>
+          <div><b>Inside anyone's window</b><span>% of predicted turns inside at least one participant's acceptable window</span><div class="mviz" data-mv="1" aria-hidden="true"></div></div>
+          <div><b>Inside everyone's window&dagger;</b><span>% of predicted turns inside every participant's acceptable window</span><div class="mviz" data-mv="2" aria-hidden="true"></div></div>
+        </div>
+        <div class="ev-row main" data-r="A">
+          <div class="task">
+            <p class="task-name">A &middot; Turn-by-turn replay<span class="task-tag">most realistic</span></p>
+            <p class="task-desc">Decide at each turn whether to speak.</p>
+            <div class="viz" aria-hidden="true">
+              <div class="d" data-k="1"><span class="turn">Turn 1</span><span class="no on">&#x2715;</span><span class="yes">&#x2713;</span></div>
+              <div class="d" data-k="2"><span class="turn">Turn 2</span><span class="no on">&#x2715;</span><span class="yes">&#x2713;</span></div>
+              <div class="d pick" data-k="3"><span class="turn">Turn 3</span><span class="no">&#x2715;</span><span class="yes on">&#x2713;</span></div>
+              <div class="post" data-k="4"><span class="ai">AI</span><span class="msg-chip">Waymo&#39;s decision-making&hellip;</span></div>
+            </div>
+          </div>
+          <div class="mc" data-m="0" data-r="A"></div>
+          <div class="mc" data-m="1" data-r="A"></div>
+          <div class="mc" data-m="2" data-r="A"></div>
+        </div>
+        <div class="ev-row" data-r="B">
+          <div class="task">
+            <p class="task-name">B &middot; Five-turn lookahead</p>
+            <p class="task-desc">Decide at each turn while seeing the next five turns.</p>
+            <div class="viz" aria-hidden="true">
+              <div class="d" data-k="1"><span class="turn">Turn 1</span><span class="ahead"><i></i><i></i><i></i><i></i><i></i></span><span class="no on">&#x2715;</span><span class="yes">&#x2713;</span></div>
+              <div class="d" data-k="2"><span class="turn">Turn 2</span><span class="ahead"><i></i><i></i><i></i><i></i><i></i></span><span class="no on">&#x2715;</span><span class="yes">&#x2713;</span></div>
+              <div class="d pick" data-k="3"><span class="turn">Turn 3</span><span class="ahead"><i></i><i></i><i></i><i></i><i></i></span><span class="no">&#x2715;</span><span class="yes on">&#x2713;</span></div>
+              <div class="post" data-k="4"><span class="ai">AI</span><span class="msg-chip">Waymo&#39;s decision-making&hellip;</span></div>
+            </div>
+          </div>
+          <div class="mc" data-m="0" data-r="B"></div>
+          <div class="mc" data-m="1" data-r="B"></div>
+          <div class="mc" data-m="2" data-r="B"></div>
+        </div>
+        <div class="ev-row" data-r="C">
+          <div class="task">
+            <p class="task-name">C &middot; Full transcript<span class="task-tag light">upper bound</span></p>
+            <p class="task-desc">See the whole conversation, then pick one turn.</p>
+            <div class="viz" aria-hidden="true">
+              <div class="seq" data-k="1"><span class="more">&middot;&middot;&middot;</span><span class="c" data-cur="2">6</span><span class="c" data-cur="3">7</span><span class="c pick" data-pick="4">Turn 8</span><span class="c">9</span><span class="c">10</span><span class="more">&middot;&middot;&middot;</span></div>
+              <div class="post center" data-k="4"><span class="ai">AI</span><span class="msg-chip">Waymo&#39;s decision-making&hellip;</span></div>
+            </div>
+          </div>
+          <div class="mc" data-m="0" data-r="C"></div>
+          <div class="mc" data-m="1" data-r="C"></div>
+          <div class="mc" data-m="2" data-r="C"></div>
+        </div>
+        <div class="ev-axis" aria-hidden="true">
+          <div></div>
+          <div class="ax"><span style="left:0">0%</span><span style="left:50%">50%</span><span style="left:100%">100%</span></div>
+          <div class="ax"><span style="left:0">0%</span><span style="left:50%">50%</span><span style="left:100%">100%</span></div>
+          <div class="ax"><span style="left:0">0%</span><span style="left:50%">50%</span><span style="left:100%">100%</span></div>
+        </div>
+      </div>
+      <p class="note" style="margin-top:10px">Hover a bar for 95% bootstrap intervals. &dagger;Defined on the 296 of 384 messages where every participant's window overlaps.</p>
+      <details class="hr-table">
+        <summary>Show as table</summary>
+        <div class="table-scroll">
+          <table class="results">
+          <thead>
+            <tr><th>Task setup / baseline</th><th>Matches anyone's<br>ideal turn</th><th>Inside anyone's<br>window</th><th>Inside everyone's<br>window†</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>(A) Turn-by-turn replay</td><td>19.0%</td><td>50.5%</td><td>24.2%</td></tr>
+            <tr><td>(B) Replay with five-turn lookahead</td><td>22.4%</td><td>52.2%</td><td>27.8%</td></tr>
+            <tr><td>(C) Selection from the full transcript</td><td>57.8%</td><td>92.7%</td><td>73.3%</td></tr>
+            <tr class="sep"><td>Lay humans, turn-by-turn replay</td><td>23.7%</td><td>53.7%</td><td>33.2%</td></tr>
+            <tr><td class="muted">Random turn</td><td class="muted">3.7%</td><td class="muted">25.5%</td><td class="muted">7.6%</td></tr>
+          </tbody>
+        </table>
+        </div>
+      </details>
+      <div class="hr-tip" id="hr-tip" role="tooltip" hidden></div>
+      <div class="model-pop" id="model-pop" role="tooltip" hidden><p class="mp-title">15 models, 28 configurations</p><div class="mp-g"><p>Google</p><ul><li><code>gemini-3.1-pro</code><span><em>S</em><em>R</em></span></li><li><code>gemini-3.6-flash</code><span><em>S</em><em>R</em></span></li></ul></div><div class="mp-g"><p>OpenAI</p><ul><li><code>gpt-5.6-sol</code><span><em>S</em><em>R</em></span></li><li><code>gpt-5.6-luna</code><span><em>S</em><em>R</em></span></li></ul></div><div class="mp-g"><p>Anthropic</p><ul><li><code>opus-4-6</code><span><em>S</em><em>R</em></span></li><li><code>sonnet-4-6</code><span><em>S</em><em>R</em></span></li><li><code>haiku-4-5</code><span><em>S</em><em>R</em></span></li></ul></div><div class="mp-g"><p>Open-weight, via Together AI</p><ul><li><code>deepseek-v4-pro</code><span><em>S</em><em>R</em></span></li><li><code>glm-5.2</code><span><em>S</em><em>R</em></span></li><li><code>kimi-k3</code><span><em>S</em><em>R</em></span></li><li><code>qwen-3.7-max</code><span><em>S</em><em>R</em></span></li><li><code>gpt-oss-120b</code><span><em>S</em><em>R</em></span></li><li><code>nemotron-3-ultra-550b-a55b</code><span><em>S</em><em>R</em></span></li><li><code>minimax-m3</code><span><em>R</em></span></li><li><code>inkling</code><span><em>R</em></span></li></ul></div><p class="mp-foot"><em>S</em> standard (lowest reasoning effort) &middot; <em>R</em> native reasoning at max effort. Thirteen models run in both modes; minimax-m3 and inkling only in reasoning mode.</p></div>
+    </div>
+  </section>
+
+  <section id="findings">
+    <div class="container">
+      <h2>Findings</h2>
+      <h3>Model performance drops sharply when deciding turn by turn, worse than lay humans</h3>
+      <p>With the full transcript, 57.8% of model placements match a participant's ideal turn and 92.7% fall inside someone's acceptable window. Deciding live, turn by turn, these drop to <span class="bad">19.0%</span> and <span class="bad">50.5%</span>. Independent lay annotators doing the same turn-by-turn replay matched an ideal turn <span class="good">23.7%</span> of the time (models: 19.0%) and were less often premature (39.7% vs. 46.4%).</p>
+
+      <h3>Models chime in too early</h3>
+      <p>In turn-by-turn replay, <span class="bad">46.4%</span> of placements come before every participant's acceptable window opens.</p>
+      <figure class="oc">
+        <div class="oc-chart" id="oc" role="img" aria-label="Stacked bars of where model predictions land. Turn-by-turn replay: 18.6% at anyone's ideal turn, 31.5% in an acceptable window, 46.4% premature, 1.0% overdue. Five-turn lookahead: 22.1%, 29.8%, 46.0% premature, 0.4% overdue. Full transcript: 57.8%, 34.9%, 1.5% premature, 5.2% overdue."></div>
+        <div class="oc-legend" id="oc-legend" aria-hidden="true"></div>
+        <figcaption><strong>Figure 1.</strong> Where predictions land. Deciding live, the most common outcome is firing before any participant's window opens. With the full transcript, the remaining error is lateness. Hover a segment for its exact share.</figcaption>
+        <details class="hr-table">
+          <summary>Show as table</summary>
+          <div class="table-scroll"><table class="results"><thead><tr><th>Outcome</th><th>(A) Turn-by-turn replay</th><th>(B) Replay with five-turn lookahead</th><th>(C) Selection from the full transcript</th></tr></thead><tbody><tr><td>Anyone&#39;s ideal turn</td><td>18.6%</td><td>22.1%</td><td>57.8%</td></tr><tr><td>Anyone&#39;s acceptable window (not ideal)</td><td>31.5%</td><td>29.8%</td><td>34.9%</td></tr><tr><td>Declined (participant agreed)</td><td>0.4%</td><td>0.3%</td><td>0.0%</td></tr><tr><td>Between acceptable windows</td><td>0.4%</td><td>0.5%</td><td>0.6%</td></tr><tr><td>Premature</td><td>46.4%</td><td>46.0%</td><td>1.5%</td></tr><tr><td>Overdue</td><td>1.0%</td><td>0.4%</td><td>5.2%</td></tr><tr><td>Missed entirely</td><td>1.8%</td><td>0.9%</td><td>0.0%</td></tr></tbody></table></div>
+        </details>
+      </figure>
+    </div>
+  </section>
+
+  <section id="resources">
+    <div class="container">
+      <h2>Paper, data and code</h2>
+      <ul class="resources">
+        <li><a href="pitch.pdf">Paper (PDF)</a><span>Full paper with appendix: protocol, prompts, models and additional results</span></li>
+        <li><a href="https://github.com/gobrianyu/pitch-benchmark/tree/master/annotation-system">Benchmark Annotation System</a><span>The study platform for group chat, message contribution, timing judgments and deliberation</span></li>
+        <li><a href="https://github.com/gobrianyu/pitch-benchmark/tree/master/data">Benchmark Data</a><span>Conversations, candidate contributions and participant timing judgments</span></li>
+        <li><a href="https://github.com/gobrianyu/pitch-human-baseline">Human Baseline System</a><span>The platform lay annotators used for the turn-by-turn replay task</span></li>
+        <li><a href="https://github.com/gobrianyu/pitch-benchmark/tree/master/data">Human Baseline Data</a><span>Lay annotators' placements on the turn-by-turn replay task</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="citation">
+    <div class="container">
+      <h2>Citation</h2>
+      <div class="cite">
+        <button class="copy" type="button" id="copy">Copy</button>
+<pre id="bibtex">@article{wang2026pitch,
+  title   = {When Should AI Chime In? Benchmarking Timely Contribution
+             of Proactive Agents in Multi-Party Chat},
+  author  = {Wang, Ruotong and Yu, Brian S. and Zhou, Xinyi and
+             Chang, Joseph Chee and Siangliulue, Pao and Bragg, Jonathan and
+             Jiang, Liwei and Zhang, Amy X.},
+  journal = {arXiv preprint},
+  year    = {2026}
+}</pre>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">Participants consented to the public release of their conversations and annotations; names are removed from the released data.</div>
+</footer>
+
+<script>
+  (function () {
+    // Timing judgments for this message, from the PITCH data (turn numbers).
+    // P3's first-pass ideal turn was 35; it moved to 39 in deliberation (step 5).
+    var lanes = [
+      { lane: 1, from: 4, best: [[34, 4]], win: [34, 76] },          // P1
+      { lane: 2, from: 3, best: [[37, 3]], win: [24, 43] },          // P2, author
+      { lane: 3, from: 4, best: [[35, 4, 4], [39, 5]], ghost: [35, 5], win: [34, 43] } // P3
+    ];
+    var agree = [34, 43];
+    var ideals = [34, 37, 39];
+    var focusRow = { 2: 34, 3: 37, 4: 34, 5: 39, 6: 37 };
+
+    var story = document.getElementById('story');
+    var chat = document.getElementById('chat');
+    var rows = Array.prototype.slice.call(chat.querySelectorAll('.row'));
+
+    // Build three lanes per row: a window bar and (optionally) an ideal-turn dot.
+    rows.forEach(function (row) {
+      var a = +row.dataset.from, b = +row.dataset.to;
+      var box = row.querySelector('.lanes');
+      lanes.forEach(function (L) {
+        var cell = document.createElement('div');
+        cell.className = 'lane l' + L.lane;
+        if (L.win[0] <= b && L.win[1] >= a) {
+          var bar = document.createElement('i');
+          bar.className = 'bar';
+          if (a === b) {
+            if (L.win[0] === a) bar.classList.add('s');
+            if (L.win[1] === b) bar.classList.add('e');
+          } else {
+            // A collapsed row spans several turns: start/end the bar proportionally inside it.
+            var span = b - a + 1;
+            if (L.win[0] > a) bar.style.top = ((L.win[0] - a) / span * 100) + '%';
+            if (L.win[1] < b) bar.style.bottom = ((b - L.win[1]) / span * 100) + '%';
+          }
+          bar.dataset.from = L.from;
+          cell.appendChild(bar);
+        }
+        L.best.forEach(function (bt) {
+          if (bt[0] >= a && bt[0] <= b) {
+            var dot = document.createElement('i');
+            dot.className = 'dot';
+            dot.dataset.from = bt[1];
+            if (bt[2]) dot.dataset.until = bt[2];
+            cell.appendChild(dot);
+          }
+        });
+        if (L.ghost && L.ghost[0] >= a && L.ghost[0] <= b) {
+          var g = document.createElement('i');
+          g.className = 'dot ghost';
+          g.dataset.from = L.ghost[1];
+          cell.appendChild(g);
+        }
+        box.appendChild(cell);
+      });
+    });
+
+    // Step 1: the conversation plays turn by turn, then restarts.
+    var reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var inView = true, playing = false, timer = null, idx = 0;
+    function startLoop() {
+      if (reduceMotion) { rows.forEach(function (r) { r.classList.add('in'); }); return; }
+      if (playing) return;
+      playing = true;
+      idx = 0;
+      rows.forEach(function (r) { r.classList.remove('in'); });
+      chat.scrollTop = 0;
+      tick();
+    }
+    function stopLoop() { playing = false; clearTimeout(timer); }
+    function tick() {
+      if (!playing) return;
+      if (!inView) { timer = setTimeout(tick, 400); return; }
+      if (idx < rows.length) {
+        var r = rows[idx++];
+        r.classList.add('in');
+        chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
+        timer = setTimeout(tick, r.classList.contains('gap') ? 1000 : 1500);
+      } else {
+        timer = setTimeout(function () {
+          rows.forEach(function (r) { r.classList.remove('in'); });
+          idx = 0;
+          chat.scrollTop = 0;
+          timer = setTimeout(tick, 400);
+        }, 3000);
+      }
+    }
+    new IntersectionObserver(function (e) { inView = e[0].isIntersecting; }).observe(chat);
+
+    function render(step) {
+      story.setAttribute('data-step', step);
+      rows.forEach(function (row) {
+        var a = +row.dataset.from, b = +row.dataset.to;
+        row.classList.toggle('agree', step === 6 && a >= agree[0] && b <= agree[1]);
+        var partial = step === 6 && a < b && !(a >= agree[0] && b <= agree[1]) && agree[0] <= b && agree[1] >= a;
+        if (partial) {
+          var span = b - a + 1;
+          var t = (Math.max(agree[0], a) - a) / span * 100, e = (Math.min(agree[1], b) - a + 1) / span * 100;
+          row.style.background = 'linear-gradient(to bottom, transparent ' + t + '%, var(--agree) ' + t + '%, var(--agree) ' + e + '%, transparent ' + e + '%)';
+        } else {
+          row.style.background = '';
+        }
+        row.classList.toggle('ideal', step === 6 && a === b && ideals.indexOf(a) >= 0);
+      });
+      chat.querySelectorAll('.bar, .dot').forEach(function (el) {
+        var on = step >= +el.dataset.from && (!el.dataset.until || step <= +el.dataset.until);
+        el.classList.toggle('on', on);
+      });
+      if (step === 1) { startLoop(); return; }
+      stopLoop();
+      rows.forEach(function (row) { row.classList.add('in'); });
+      var target = chat.querySelector('.row[data-from="' + focusRow[step] + '"]');
+      if (target) {
+        var top = target.offsetTop - chat.clientHeight / 2 + target.offsetHeight / 2;
+        chat.scrollTo({ top: Math.max(0, top), behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+      }
+    }
+
+    var steps = Array.prototype.slice.call(document.querySelectorAll('.step'));
+    var current = 0;
+    function activate(n) {
+      if (n === current) return;
+      current = n;
+      steps.forEach(function (s) { s.classList.toggle('on', +s.dataset.step === n); });
+      render(n);
+    }
+    var narrow = matchMedia('(max-width: 820px)').matches;
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) activate(+e.target.dataset.step); });
+    }, { rootMargin: narrow ? '-70% 0px -25% 0px' : '-45% 0px -50% 0px' });
+    steps.forEach(function (s) { io.observe(s); });
+    activate(1);
+
+
+    // Evaluation: results per task row (values from the paper's headline results table).
+    (function () {
+      var labels = { A: '(A) Turn-by-turn replay', B: '(B) Five-turn lookahead', C: '(C) Full transcript' };
+      var metrics = [
+        { title: "Matches anyone's ideal turn", v: { A: 19.0, B: 22.4, C: 57.8 }, human: 23.7, random: 3.7,
+          ci: { A: [16.5, 21.7], B: [19.3, 25.5], C: [54.3, 61.2] } },
+        { title: "Inside anyone's window", v: { A: 50.5, B: 52.2, C: 92.7 }, human: 53.7, random: 25.5,
+          ci: { A: [46.8, 54.3], B: [48.2, 56.1], C: [90.9, 94.3] } },
+        { title: "Inside everyone's window", v: { A: 24.2, B: 27.8, C: 73.3 }, human: 33.2, random: 7.6 }
+      ];
+      function line(cls, v) {
+        var inside = v > 70;
+        return '<div class="mc-line ' + cls + '"><span class="mc-b" style="width:' + v + '%"></span>' +
+          '<span class="mc-v' + (inside ? ' in' : '') + '" style="' + (inside ? 'right:' + (100 - v) + '%' : 'left:' + v + '%') + '">' +
+          v.toFixed(1) + '%</span></div>';
+      }
+      document.querySelectorAll('#ev .mc').forEach(function (cell) {
+        var m = metrics[+cell.dataset.m], r = cell.dataset.r;
+        var html = '<span class="mc-name">' + m.title + '</span>' +
+          '<div class="mc-t' + (m.random != null ? ' rnd" style="--rnd:' + m.random + '%' : '') + '">' + line('m', m.v[r]);
+        if (r === 'A' && m.human != null) html += line('h', m.human);
+        cell.innerHTML = html + '</div>';
+      });
+
+      var tip = document.getElementById('hr-tip');
+      var ev = document.getElementById('ev');
+      ev.addEventListener('mouseover', function (e) {
+        var cell = e.target.closest('.mc');
+        if (!cell) { tip.hidden = true; return; }
+        var m = metrics[+cell.dataset.m], r = cell.dataset.r;
+        var html = '<b>' + labels[r] + '</b> &middot; ' + m.title +
+          '<br><i style="background:var(--hr-model)"></i>' + 'Models' + ': <b>' + m.v[r].toFixed(1) + '%</b>';
+        if (m.ci && m.ci[r]) html += ' <span class="k">(95% CI ' + m.ci[r][0] + '–' + m.ci[r][1] + ')</span>';
+        if (r === 'A' && m.human != null) html += '<br><i style="background:var(--hr-human)"></i>Lay human performance: <b>' + m.human.toFixed(1) + '%</b>';
+        if (m.random != null) html += '<br><span class="k">Random turn: ' + m.random.toFixed(1) + '%</span>';
+        tip.innerHTML = html;
+        tip.hidden = false;
+        var box = cell.querySelector('.mc-t').getBoundingClientRect();
+        var x = Math.min(box.left + box.width * 0.3, window.innerWidth - tip.offsetWidth - 8);
+        var y = box.top - tip.offsetHeight - 6;
+        if (y < 8) y = box.bottom + 6;
+        tip.style.left = Math.max(8, x) + 'px';
+        tip.style.top = y + 'px';
+      });
+      ev.addEventListener('mouseleave', function () { tip.hidden = true; });
+      window.addEventListener('scroll', function () { tip.hidden = true; }, { passive: true });
+
+      // Task animations: all three cards share one clock and loop.
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      var vizzes = Array.prototype.slice.call(ev.querySelectorAll('.viz'));
+      vizzes.forEach(function (v) { v.classList.add('anim'); });
+      var phase = 0, visible = false;
+      function paint() {
+        vizzes.forEach(function (v) {
+          v.querySelectorAll('[data-k]').forEach(function (el) { el.classList.toggle('show', phase >= +el.dataset.k); });
+          v.querySelectorAll('[data-cur]').forEach(function (el) { el.classList.toggle('cur', phase === +el.dataset.cur); });
+          v.querySelectorAll('[data-pick]').forEach(function (el) { el.classList.toggle('pick', phase >= +el.dataset.pick); });
+        });
+      }
+      paint();
+      new IntersectionObserver(function (e) { visible = e[0].isIntersecting; }).observe(ev);
+      setInterval(function () {
+        if (!visible) return;
+        phase = (phase + 1) % 9;
+        paint();
+      }, 750);
+    })();
+
+
+    // Metric diagrams: three participants' windows (bars) and ideal turns (dots) on a 12-turn
+    // timeline; the green band marks the turns where a prediction counts.
+    (function () {
+      var P = [
+        { c: '#e07a5f', w: [3, 7], b: 5 },
+        { c: '#3d8bbd', w: [4, 9], b: 6 },
+        { c: '#7f9a2e', w: [5, 10], b: 8 }
+      ];
+      var specs = [
+        { bands: [[5, 5], [6, 6], [8, 8]] },
+        { bands: [[3, 10]] },
+        { bands: [[5, 7]] }
+      ];
+      function x(t) { return 24 + (t - 1) * 15; }
+      document.querySelectorAll('.mviz').forEach(function (el) {
+        var sp = specs[+el.dataset.mv];
+        var o = '<svg viewBox="0 18 200 68" xmlns="http://www.w3.org/2000/svg">';
+        sp.bands.forEach(function (b) {
+          o += '<rect x="' + (x(b[0]) - 6.5) + '" y="22" width="' + (x(b[1]) - x(b[0]) + 13) + '" height="50" rx="3" fill="#dcefe4"/>';
+        });
+        for (var t = 1; t <= 12; t++) o += '<line x1="' + x(t) + '" y1="70" x2="' + x(t) + '" y2="74" stroke="#9ca3af" stroke-width="1"/>';
+        o += '<line x1="' + (x(1) - 6) + '" y1="72" x2="' + (x(12) + 6) + '" y2="72" stroke="#d1d5db" stroke-width="1"/>';
+        o += '<text x="' + (x(12) + 6) + '" y="84" text-anchor="end" font-size="8.5" fill="#6b7280">turns &#8594;</text>';
+        P.forEach(function (p, i) {
+          var y = 32 + i * 13;
+          o += '<text x="0" y="' + (y + 3) + '" font-size="8.5" font-weight="700" fill="' + p.c + '">P' + (i + 1) + '</text>';
+          o += '<rect x="' + x(p.w[0]) + '" y="' + (y - 2) + '" width="' + (x(p.w[1]) - x(p.w[0])) + '" height="4" rx="2" fill="' + p.c + '" opacity="0.55"/>';
+          o += '<circle cx="' + x(p.b) + '" cy="' + y + '" r="3.6" fill="' + p.c + '" stroke="#fff" stroke-width="1.5"/>';
+        });
+        el.innerHTML = o + '</svg>';
+      });
+    })();
+
+    // Figure 1: where predictions land. Shares (% of answered predictions) are read from the
+    // paper's fig_outcomes; categories follow classify_outcome in the analysis code.
+    (function () {
+      var cats = [
+        { k: 'ideal', name: "Anyone's ideal turn", c: '#2b6cb0', dark: true, def: "At some participant's ideal turn." },
+        { k: 'window', name: "Anyone's acceptable window (not ideal)", c: '#7fb3e0', def: "Inside some participant's window, but not at an ideal turn." },
+        { k: 'declined', name: 'Declined (participant agreed)', c: '#4fa87f', def: 'Never posted, and a participant said the message should not appear.' },
+        { k: 'between', name: 'Between acceptable windows', c: '#c9ada7', def: "In a gap between participants' windows." },
+        { k: 'premature', name: 'Premature', c: '#f6c667', def: "Before any participant's window opens." },
+        { k: 'overdue', name: 'Overdue', c: '#e07a5f', def: "After every participant's window has closed." },
+        { k: 'missed', name: 'Missed entirely', c: '#9b9b9b', def: 'Never posted, though participants placed the message.' }
+      ];
+      var rows = [
+        { label: '(A) Turn-by-turn replay', v: [18.61, 31.46, 0.44, 0.35, 46.39, 1.00, 1.75] },
+        { label: '(B) Replay with five-turn lookahead', v: [22.11, 29.82, 0.27, 0.51, 45.96, 0.42, 0.90] },
+        { label: '(C) Selection from the full transcript', v: [57.80, 34.91, 0, 0.59, 1.51, 5.19, 0] }
+      ];
+      var root = document.getElementById('oc');
+      var html = '';
+      rows.forEach(function (r, ri) {
+        html += '<div class="oc-row"><span class="oc-l">' + r.label + '</span><div class="oc-bar">';
+        cats.forEach(function (c, ci) {
+          var v = r.v[ci];
+          if (!v) return;
+          html += '<span class="oc-s' + (c.dark ? ' dark' : '') + '" data-r="' + ri + '" data-c="' + ci + '" style="flex:' + v + ' 1 0;background:' + c.c + '">' +
+            (v > 6 ? Math.round(v) + '%' : '') + '</span>';
+        });
+        html += '</div></div>';
+      });
+      html += '<div class="oc-axis"><div></div><div class="oc-ticks">' +
+        [0, 20, 40, 60, 80, 100].map(function (t) { return '<span style="left:' + t + '%">' + t + '%</span>'; }).join('') +
+        '</div><div class="oc-xl">share of predictions</div></div>';
+      root.innerHTML = html;
+      document.getElementById('oc-legend').innerHTML = cats.map(function (c) {
+        return '<span><i style="background:' + c.c + '"></i>' + c.name + '</span>';
+      }).join('');
+
+      var tip = document.getElementById('hr-tip');
+      root.addEventListener('mouseover', function (e) {
+        var seg = e.target.closest('.oc-s');
+        if (!seg) { tip.hidden = true; return; }
+        var r = rows[+seg.dataset.r], c = cats[+seg.dataset.c];
+        tip.innerHTML = '<b>' + r.label + '</b><br><i style="background:' + c.c + '"></i>' + c.name + ': <b>' +
+          r.v[+seg.dataset.c].toFixed(1) + '%</b><br><span class="k">' + c.def + '</span>';
+        tip.hidden = false;
+        var box = seg.getBoundingClientRect();
+        var x = Math.min(Math.max(8, box.left + box.width / 2 - tip.offsetWidth / 2), window.innerWidth - tip.offsetWidth - 8);
+        var y = box.top - tip.offsetHeight - 8;
+        if (y < 8) y = box.bottom + 8;
+        tip.style.left = x + 'px';
+        tip.style.top = y + 'px';
+      });
+      root.addEventListener('mouseleave', function () { tip.hidden = true; });
+    })();
+
+    // Model list tooltip on "15 models in 28 configurations".
+    (function () {
+      var defn = document.getElementById('model-defn');
+      var pop = document.getElementById('model-pop');
+      function open() {
+        pop.hidden = false;
+        var r = defn.getBoundingClientRect();
+        var x = Math.min(Math.max(8, r.left), window.innerWidth - pop.offsetWidth - 8);
+        var y = r.bottom + 8;
+        if (y + pop.offsetHeight > window.innerHeight - 8) y = Math.max(8, r.top - pop.offsetHeight - 8);
+        pop.style.left = x + 'px';
+        pop.style.top = y + 'px';
+      }
+      function close() { pop.hidden = true; }
+      defn.addEventListener('mouseenter', open);
+      defn.addEventListener('mouseleave', close);
+      defn.addEventListener('focus', open);
+      defn.addEventListener('blur', close);
+      defn.addEventListener('keydown', function (e) { if (e.key === 'Escape') { close(); defn.blur(); } });
+      window.addEventListener('scroll', close, { passive: true });
+    })();
+
+
+    // Table of contents: highlight the section currently in view.
+    (function () {
+      var links = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
+      var byId = {};
+      links.forEach(function (a) { byId[a.getAttribute('href').slice(1)] = a; });
+      var sections = Object.keys(byId).map(function (id) { return document.getElementById(id); }).filter(Boolean);
+      var ticking = false;
+      function update() {
+        ticking = false;
+        // The current section is the last one whose top has passed 40% of the viewport.
+        var line = window.innerHeight * 0.4, current = sections[0];
+        sections.forEach(function (sec) { if (sec.getBoundingClientRect().top <= line) current = sec; });
+        links.forEach(function (a) { a.classList.toggle('on', a === byId[current.id]); });
+      }
+      window.addEventListener('scroll', function () {
+        if (!ticking) { ticking = true; requestAnimationFrame(update); }
+      }, { passive: true });
+      window.addEventListener('resize', update);
+      update();
+    })();
+
+    var btn = document.getElementById('copy');
+    btn.addEventListener('click', function () {
+      var text = document.getElementById('bibtex').textContent;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () {
+          btn.textContent = 'Copied';
+          setTimeout(function () { btn.textContent = 'Copy'; }, 1600);
+        }, function () {});
+      }
+    });
+  })();
+</script>
+</body>
+</html>
