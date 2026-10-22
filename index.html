@@ -182,11 +182,12 @@
 
   @media (max-width: 820px) {
     .story { grid-template-columns: minmax(0, 1fr); gap: 0; }
-    .stage { top: 0; z-index: 1; background: var(--bg); padding: 8px 0; margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
-    .chat { max-height: 52vh; max-height: 52dvh; }
-    .steps { position: relative; z-index: 2; }
-    .step, .step:first-child, .step:last-child { min-height: 70vh; align-items: flex-end; padding: 0 0 6vh; }
-    .card { opacity: 1; background: #fff; border: 1px solid var(--rule); border-radius: 12px; padding: 14px 16px; box-shadow: 0 6px 24px rgba(17, 24, 39, 0.08); }
+    /* Chat stays pinned above; the step text scrolls underneath it, never over it. */
+    .stage { top: 0; z-index: 2; background: var(--bg); padding: 8px 16px 10px; margin: 0 -16px; box-shadow: 0 12px 12px -12px rgba(17, 24, 39, 0.18); }
+    .chat { max-height: 46vh; max-height: 46dvh; }
+    .steps { position: relative; z-index: 1; padding-top: 12px; }
+    .step, .step:first-child, .step:last-child { display: block; min-height: 0; padding: 0 0 28vh; }
+    .card { opacity: 1; background: #fff; border: 1px solid var(--rule); border-radius: 12px; padding: 14px 16px; }
   }
 
   /* Mock of the study interface (Phase 2) */
@@ -376,19 +377,19 @@
       <span><sup>3</sup>Allen Institute for AI</span>
     </p>
     <div class="buttons">
-      <a class="btn primary" href="pitch.pdf">
+      <a class="btn primary" href="https://arxiv.org/abs/2610.25896" target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>
         Paper (PDF)</a>
-      <a class="btn" href="https://github.com/gobrianyu/pitch-benchmark/tree/master/annotation-system">
+      <a class="btn" href="https://github.com/Social-Futures-Lab/pitch/tree/master/annotation-system" target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         Benchmark Annotation System</a>
-      <a class="btn" href="https://github.com/gobrianyu/pitch-benchmark/tree/master/data">
+      <a class="btn" href="https://github.com/Social-Futures-Lab/pitch/blob/master/data/pitch-benchmark-data.json" target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>
         Benchmark Data</a>
-      <a class="btn" href="https://github.com/gobrianyu/pitch-human-baseline">
+      <a class="btn" href="https://github.com/Social-Futures-Lab/pitch-human-baseline" target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><path d="M16 3.13a4 4 0 0 1 0 7.75M21 21v-2a4 4 0 0 0-3-3.85"/></svg>
         Human Baseline System</a>
-      <a class="btn" href="https://github.com/gobrianyu/pitch-benchmark/tree/master/data">
+      <a class="btn" href="https://github.com/Social-Futures-Lab/pitch/blob/master/data/human-baseline-data.csv" target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>
         Human Baseline Data</a>
     </div>
@@ -631,11 +632,11 @@
     <div class="container">
       <h2>Paper, data and code</h2>
       <ul class="resources">
-        <li><a href="pitch.pdf">Paper (PDF)</a><span>Full paper with appendix: protocol, prompts, models and additional results</span></li>
-        <li><a href="https://github.com/gobrianyu/pitch-benchmark/tree/master/annotation-system">Benchmark Annotation System</a><span>The study platform for group chat, message contribution, timing judgments and deliberation</span></li>
-        <li><a href="https://github.com/gobrianyu/pitch-benchmark/tree/master/data">Benchmark Data</a><span>Conversations, candidate contributions and participant timing judgments</span></li>
-        <li><a href="https://github.com/gobrianyu/pitch-human-baseline">Human Baseline System</a><span>The platform lay annotators used for the turn-by-turn replay task</span></li>
-        <li><a href="https://github.com/gobrianyu/pitch-benchmark/tree/master/data">Human Baseline Data</a><span>Lay annotators' placements on the turn-by-turn replay task</span></li>
+        <li><a href="https://arxiv.org/abs/2610.25896" target="_blank" rel="noopener">Paper (PDF)</a><span>Full paper with appendix: protocol, prompts, models and additional results</span></li>
+        <li><a href="https://github.com/Social-Futures-Lab/pitch/tree/master/annotation-system" target="_blank" rel="noopener">Benchmark Annotation System</a><span>The study platform for group chat, message contribution, timing judgments and deliberation</span></li>
+        <li><a href="https://github.com/Social-Futures-Lab/pitch/blob/master/data/pitch-benchmark-data.json" target="_blank" rel="noopener">Benchmark Data</a><span>Conversations, candidate contributions and participant timing judgments</span></li>
+        <li><a href="https://github.com/Social-Futures-Lab/pitch-human-baseline" target="_blank" rel="noopener">Human Baseline System</a><span>The platform lay annotators used for the turn-by-turn replay task</span></li>
+        <li><a href="https://github.com/Social-Futures-Lab/pitch/blob/master/data/human-baseline-data.csv" target="_blank" rel="noopener">Human Baseline Data</a><span>Lay annotators' placements on the turn-by-turn replay task</span></li>
       </ul>
     </div>
   </section>
@@ -651,7 +652,7 @@
   author  = {Wang, Ruotong and Yu, Brian S. and Zhou, Xinyi and
              Chang, Joseph Chee and Siangliulue, Pao and Bragg, Jonathan and
              Jiang, Liwei and Zhang, Amy X.},
-  journal = {arXiv preprint},
+  journal = {arXiv preprint arXiv:2610.25896},
   year    = {2026}
 }</pre>
       </div>
@@ -793,7 +794,7 @@
     var narrow = matchMedia('(max-width: 820px)').matches;
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) { if (e.isIntersecting) activate(+e.target.dataset.step); });
-    }, { rootMargin: narrow ? '-70% 0px -25% 0px' : '-45% 0px -50% 0px' });
+    }, { rootMargin: narrow ? '-65% 0px -30% 0px' : '-45% 0px -50% 0px' });
     steps.forEach(function (s) { io.observe(s); });
     activate(1);
 
